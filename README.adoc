@@ -1,0 +1,56 @@
+= Spring Cloud Gateway test bench 🛠️
+:scg-docs-uri: https://docs.spring.io/spring-cloud-gateway/docs/current/reference/html/
+
+A repo to test & explore {scg-docs-uri}[Spring Cloud Gateway].
+
+
+== Known issues
+
+=== NPE when enabling {scg-docs-uri}#spring-cloud-circuitbreaker-filter-factory[CircuitBreaker]
+
+Enabling CircuitBreaker endpoint returns error 500 due to internal NullPointerException when adding `X-Forwarded-Proto` header.
+Attempting to disable {scg-docs-uri}#xforwarded-headers-filter[as seen in docs] it does not seem to work.
+
+. Clone repo
+. Run `./gradlew bootrun` from terminal, or class `ScGatewayApplication` from IDE
+. Call `/status/404` endpoint
+
+ curl "http://localhost:8080/status/404" -v
+
+.response obtained
+----
+*   Trying 127.0.0.1...
+* TCP_NODELAY set
+* Connected to localhost (127.0.0.1) port 8080 (#0)
+> GET /status/404 HTTP/1.1
+> Host: localhost:8080
+> User-Agent: curl/7.64.1
+> Accept: */*
+>
+< HTTP/1.1 500 Internal Server Error
+< Content-Type: application/json
+< Content-Length: 136
+<
+* Connection #0 to host localhost left intact
+{"timestamp":"2021-10-09T17:23:21.144+00:00","path":"/status/404","status":500,"error":"Internal Server Error","requestId":"d914bdeb-1"}* Closing connection 0
+----
+
+.Stacktrace
+----
+2021-10-09 19:23:21.153 ERROR 9115 --- [     parallel-1] a.w.r.e.AbstractErrorWebExceptionHandler : [d914bdeb-1]  500 Server Error for HTTP GET "/status/404"
+
+java.lang.NullPointerException: null
+        at org.springframework.util.StringUtils.collectionToDelimitedString(StringUtils.java:1304) ~[spring-core-5.3.10.jar:5.3.10]
+        Suppressed: reactor.core.publisher.FluxOnAssembly$OnAssemblyException:
+Error has been observed at the following site(s):
+        |_ checkpoint ⇢ org.springframework.cloud.gateway.filter.WeightCalculatorWebFilter [DefaultWebFilterChain]
+        |_ checkpoint ⇢ org.springframework.boot.actuate.metrics.web.reactive.server.MetricsWebFilter [DefaultWebFilterChain]
+        |_ checkpoint ⇢ HTTP GET "/status/404" [ExceptionHandlingWebHandler]
+Stack trace:
+                at org.springframework.util.StringUtils.collectionToDelimitedString(StringUtils.java:1304) ~[spring-core-5.3.10.jar:5.3.10]
+                at org.springframework.util.StringUtils.collectionToDelimitedString(StringUtils.java:1326) ~[spring-core-5.3.10.jar:5.3.10]
+                at org.springframework.util.StringUtils.collectionToCommaDelimitedString(StringUtils.java:1336) ~[spring-core-5.3.10.jar:5.3.10]
+                at org.springframework.cloud.gateway.filter.headers.XForwardedHeadersFilter.write(XForwardedHeadersFilter.java:291) ~[spring-cloud-gateway-server-3.0.4.jar:3.0.4]
+                at org.springframework.cloud.gateway.filter.headers.XForwardedHeadersFilter.filter(XForwardedHeadersFilter.java:216) ~[spring-cloud-gateway-server-3.0.4.jar:3.0.4]
+
+----
