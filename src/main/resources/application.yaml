@@ -1,0 +1,35 @@
+spring:
+  cloud:
+    gateway:
+      spring:
+        cloud:
+          gateway:
+            x-forwarded:
+              proto-enabled: false
+              proto-append: false
+      routes:
+        - id: getHttpbin
+          uri: https://httpbin.org
+          predicates:
+            - Path=/get/**
+          filters:
+            - StripPrefix=0
+        - id: status
+          uri: https://httpbin.org
+          predicates:
+            - Path=/status/**
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: testCb
+                fallbackUri: forward:/headers
+#                statusCodes:
+#                  - 400
+#                  - "NOT_FOUND"
+#                  - 500
+        - id: headers
+          uri: https://httpbin.org
+          predicates:
+            - Path=/headers
+#          filters:
+#            - FallbackHeaders=X-Exception
