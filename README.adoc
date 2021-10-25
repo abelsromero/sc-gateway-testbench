@@ -3,10 +3,13 @@
 
 A repo to test & explore {scg-docs-uri}[Spring Cloud Gateway].
 
-
 == Known issues
 
+== Fixed Issues
+
 === NPE when enabling {scg-docs-uri}#spring-cloud-circuitbreaker-filter-factory[CircuitBreaker]
+
+NOTE: Fixed with SpringBoot 2.5.6
 
 Enabling CircuitBreaker endpoint returns error 500 due to internal NullPointerException when adding `X-Forwarded-Proto` header.
 Attempting to disable {scg-docs-uri}#xforwarded-headers-filter[as seen in docs] it does not seem to work.
