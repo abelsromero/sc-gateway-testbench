@@ -1,3 +1,11 @@
+management:
+  endpoint:
+    gateway:
+      enabled: true
+  endpoints:
+    web:
+      exposure:
+        include: "*"
 spring:
   cloud:
     gateway:
